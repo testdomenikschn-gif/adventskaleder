@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mein Adventskalender</title>
+<style>
+@font-face{font-family:"Weihnacht";src:url("fonts/mountains-of-christmas-latin-700-normal.woff2") format("woff2");font-weight:700;font-display:swap}
+:root{--bg:#dcfae6;--ink:#10301f;--paper:#fff8e7;--gold:#f3c969;--dark:#2a0b10;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0d2a1c;--ink:#fff3d6}}
+:root[data-theme="dark"]{--bg:#0d2a1c;--ink:#fff3d6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Weihnacht","Mountains of Christmas","Segoe Script","Brush Script MT",cursive;font-weight:700}
+header{text-align:center;padding:34px 16px 18px}
+h1{margin:0;font-size:clamp(2.4rem,8vw,4rem);line-height:1.05;color:#b80000}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) h1{color:#ff7a7a}}
+.count{margin:10px 0 0;font-size:clamp(1.4rem,4vw,1.9rem)}
+.sub{margin:2px 0 0;font-size:1.15rem;opacity:.8}
+main{max-width:940px;margin:0 auto;padding:34px 14px 40px;display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+@media (max-width:760px){main{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:480px){main{grid-template-columns:repeat(3,1fr)}}
+.cell{position:relative;aspect-ratio:1;perspective:800px}
+.cell.open{z-index:3}
+.back{position:absolute;inset:0;background:var(--dark);box-shadow:inset 0 0 16px #000}
+.pic{position:absolute;left:12%;right:12%;top:20%;bottom:8%;background-size:cover;background-position:center;border:3px solid #fff;border-radius:3px;box-shadow:0 4px 10px rgba(0,0,0,.5);z-index:1;opacity:0;pointer-events:none;padding:0;transition:transform .6s .25s cubic-bezier(.3,1.5,.5,1),opacity .3s .2s}
+.cell.open .pic{opacity:1;pointer-events:auto;transform:translateY(-26%) rotate(-3deg) scale(1.04);cursor:zoom-in}
+.cell.open .pic:hover,.cell.open .pic:focus-visible{transform:translateY(-30%) rotate(-1deg) scale(1.08)}
+.door{position:absolute;inset:0;z-index:2;width:100%;height:100%;border:0;padding:0;margin:0;background:var(--c);color:#fff;font:inherit;cursor:pointer;transform-origin:left center;transition:transform .8s cubic-bezier(.4,0,.2,1)}
+.door .n{position:absolute;top:6%;right:9%;font-size:clamp(1.7rem,5.2vw,2.6rem);line-height:1}
+.door .ic{position:absolute;left:12%;bottom:10%;width:52%;height:52%;fill:#fff}
+.door .lock{position:absolute;right:8%;bottom:7%;font-size:.8rem;opacity:.85}
+.cell.open .door{transform:rotateY(-118deg);pointer-events:none}
+.cell.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);background:#b80000;color:#fff;padding:10px 20px;border-radius:24px;opacity:0;transition:.3s;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.4);font-size:1.2rem;text-align:center;max-width:90vw;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#lb{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#lb.show{display:flex}
+#lb .bg{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(32px) brightness(.55) saturate(1.3)}
+#lb .x{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.5rem;cursor:pointer}
+.card{position:relative;width:min(88vw,66vh);aspect-ratio:1;perspective:1200px;cursor:pointer;animation:pop .5s cubic-bezier(.3,1.4,.5,1)}
+.flipper{position:absolute;inset:0;transition:transform .7s;transform-style:preserve-3d}
+.card.flipped .flipper{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:12px;border:6px solid #fff;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.front{background-size:cover;background-position:center}
+.rear{transform:rotateY(180deg);background:var(--paper);color:#5a0d16;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7% 8%;overflow:auto}
+.rear::before{content:"";position:absolute;inset:8px;border:2px dashed #c0172b;border-radius:6px;pointer-events:none}
+.rear h2{margin:0 0 .4em;font-size:clamp(1.8rem,7vw,2.8rem);color:#b80000}
+.rear p{margin:0;font-size:clamp(1.25rem,4.6vw,1.9rem);line-height:1.3;white-space:pre-wrap;max-height:100%}
+.hint{position:relative;color:#fff;font-size:1.25rem;text-shadow:0 2px 6px #000}
+@keyframes pop{from{transform:scale(.6) rotate(-4deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{transition-duration:.01ms!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-tree" viewBox="0 0 64 64"><path d="M32 4 16 24h8L10 42h14L12 58h40L40 42h14L40 24h8z"/></symbol>
+<symbol id="i-gift" viewBox="0 0 64 64"><rect x="8" y="22" width="48" height="11"/><rect x="12" y="33" width="40" height="24"/><path d="M32 22C20 6 6 14 32 22c26-8 12-16 0 0z" fill="none" stroke="#fff" stroke-width="4"/><rect x="29" y="22" width="6" height="35" fill="#000" fill-opacity=".22"/></symbol>
+<symbol id="i-star" viewBox="0 0 64 64"><path d="m32 4 7 20h21L43 37l6 21-17-13-17 13 6-21L4 24h21z"/></symbol>
+<symbol id="i-flake" viewBox="0 0 64 64"><path d="M32 4v56M8 18l48 28M8 46l48-28M24 8l8 8 8-8M24 56l8-8 8 8" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-candle" viewBox="0 0 64 64"><path d="M32 6c9 11 7 19 0 19s-9-8 0-19z"/><rect x="22" y="28" width="20" height="26"/><rect x="12" y="54" width="40" height="6" rx="3"/></symbol>
+<symbol id="i-holly" viewBox="0 0 64 64"><ellipse cx="20" cy="22" rx="17" ry="8" transform="rotate(-30 20 22)"/><ellipse cx="44" cy="22" rx="17" ry="8" transform="rotate(30 44 22)"/><circle cx="23" cy="45" r="8"/><circle cx="41" cy="45" r="8"/><circle cx="32" cy="55" r="7"/></symbol>
+<symbol id="i-orn" viewBox="0 0 64 64"><rect x="26" y="6" width="12" height="9" rx="2"/><circle cx="32" cy="38" r="22"/><path d="M14 36c10 6 22-2 30-12M18 50c12 4 24-6 28-18" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="3"/></symbol>
+<symbol id="i-snow" viewBox="0 0 64 64"><rect x="22" y="4" width="20" height="6"/><rect x="26" y="10" width="12" height="2"/><circle cx="32" cy="22" r="10"/><circle cx="32" cy="46" r="15"/></symbol>
+<symbol id="i-bell" viewBox="0 0 64 64"><path d="M32 6c-12 0-16 12-16 24 0 8-6 12-8 20h48c-2-8-8-12-8-20 0-12-4-24-16-24z"/><circle cx="32" cy="55" r="5"/></symbol>
+<symbol id="i-hat" viewBox="0 0 64 64"><path d="M10 42C12 20 30 10 48 18c4 2 6 6 8 12l-2 12z"/><rect x="6" y="42" width="52" height="12" rx="6"/><circle cx="52" cy="20" r="6"/></symbol>
+</svg>
+
+<header>
+  <h1>❄ Mein Adventskalender ❄</h1>
+  <p class="count" id="count"></p>
+  <p class="sub">Jedes Türchen öffnet sich nur an seinem Tag.</p>
+</header>
+<main id="grid"></main>
+<div id="toast" role="status"></div>
+<div id="lb">
+  <div class="bg"></div>
+  <button class="x" id="close" aria-label="Schließen">✕</button>
+  <div class="card" id="card"><div class="flipper">
+    <div class="face front"></div>
+    <div class="face rear"><h2></h2><p></p></div>
+  </div></div>
+  <div class="hint">Tippe aufs Bild, um es umzudrehen</div>
+</div>
+
+<script src="daten.js"></script>
+<script>
+var YEAR = 2026, DATA = window.TUERCHEN || {};
+var ICONS = ["tree","gift","star","flake","candle","holly","orn","snow","bell","hat"];
+var COLORS = ["#4d0000","#ff5c5c","#d62020","#b80000","#8e0000","#5e1a1a","#ff8585","#f02525"];
+var ORDER = [10,3,11,21,8,6,22,24,20,14,1,18,12,4,16,17,5,9,7,13,15,19,2,23];
+
+function placeholder(n) {
+  var h = (n * 37) % 360;
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="hsl(' + h + ',60%,40%)"/><text x="200" y="250" font-size="190" text-anchor="middle" fill="#fff" font-family="Georgia,serif">' + n + '</text></svg>';
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+}
+function imgOf(n) { var d = DATA[n]; return d && d.bild ? encodeURI(d.bild) : placeholder(n); }
+function textOf(n) { var d = DATA[n]; return d && d.text ? d.text : "Zu diesem Türchen gibt es keinen Text."; }
+function unlocked(n) { return new Date() >= new Date(YEAR, 11, n); }
+
+var toast = document.getElementById("toast"), tt;
+function say(t) { toast.textContent = t; toast.classList.add("show"); clearTimeout(tt); tt = setTimeout(function () { toast.classList.remove("show"); }, 2400); }
+
+function countdown() {
+  var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var d = Math.round((new Date(YEAR, 11, 24) - today) / 864e5), el = document.getElementById("count");
+  el.textContent = d > 1 ? "Noch " + d + " Tage bis Weihnachten!" : d === 1 ? "Morgen ist Heiligabend!" : d === 0 ? "Heute ist Heiligabend!" : "Frohe Weihnachten!";
+}
+
+function build() {
+  var grid = document.getElementById("grid"); grid.innerHTML = "";
+  ORDER.forEach(function (n) {
+    var open = unlocked(n), c = document.createElement("div");
+    c.className = "cell" + (open ? "" : " locked");
+    c.innerHTML = '<div class="back"></div><button class="pic" aria-label="Foto von Türchen ' + n + '"></button>' +
+      '<button class="door" aria-label="Türchen ' + n + '"><span class="n">' + n + '</span>' +
+      '<svg class="ic"><use href="#i-' + ICONS[(n * 7) % 10] + '"/></svg>' + (open ? "" : '<span class="lock">🔒</span>') + "</button>";
+    c.querySelector(".door").style.setProperty("--c", COLORS[(n * 5) % 8]);
+    c.querySelector(".pic").style.backgroundImage = 'url("' + imgOf(n) + '")';
+    c.querySelector(".door").onclick = function () {
+      if (!unlocked(n)) {
+        c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
+        say("Noch nicht dran! Türchen " + n + " geht am " + n + ". Dezember auf 🎅");
+        return;
+      }
+      c.classList.add("open");
+    };
+    c.querySelector(".pic").onclick = function () { openLb(n); };
+    grid.appendChild(c);
+  });
+}
+
+var lb = document.getElementById("lb"), card = document.getElementById("card");
+function openLb(n) {
+  var u = 'url("' + imgOf(n) + '")';
+  lb.querySelector(".bg").style.backgroundImage = u;
+  lb.querySelector(".front").style.backgroundImage = u;
+  lb.querySelector(".rear h2").textContent = "Türchen " + n;
+  lb.querySelector(".rear p").textContent = textOf(n);
+  card.classList.remove("flipped");
+  lb.classList.add("show");
+}
+function closeLb() { lb.classList.remove("show"); }
+card.onclick = function () { card.classList.toggle("flipped"); };
+document.getElementById("close").onclick = closeLb;
+lb.onclick = function (e) { if (e.target === lb || e.target.classList.contains("bg")) closeLb(); };
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeLb(); });
+countdown(); build();
+</script>
+</body>
+</html>
